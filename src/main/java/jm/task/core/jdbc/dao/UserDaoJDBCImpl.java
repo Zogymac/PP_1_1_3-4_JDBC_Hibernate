@@ -2,12 +2,9 @@ package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
-import org.hibernate.result.internal.OutputsImpl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,11 +33,11 @@ public class UserDaoJDBCImpl implements UserDao {
             WHERE id = ?
             """;
     private static final String GET_USERS_SQL = """
-            SELECT id, name, last_name, age
+            SELECT *
             FROM user
             """;
     private static final String CLEAN_SQL = """
-            DELETE FROM user
+            TRUNCATE TABLE user
             """;
 
     private UserDaoJDBCImpl() {
@@ -49,8 +46,8 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void createUsersTable() {
         try (Connection connection = Util.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(CREATE_SQL)) {
-            preparedStatement.execute();
+             Statement statement = connection.createStatement()) {
+            statement.execute(CREATE_SQL);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -58,8 +55,8 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void dropUsersTable() {
         try (Connection connection = Util.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(DROP_TABLE_SQL)) {
-            preparedStatement.execute();
+             Statement statement = connection.createStatement()) {
+            statement.execute(DROP_TABLE_SQL);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -92,8 +89,8 @@ public class UserDaoJDBCImpl implements UserDao {
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
         try (Connection connection = Util.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(GET_USERS_SQL)) {
-            ResultSet resultSet = preparedStatement.executeQuery();
+             Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(GET_USERS_SQL);
             while (resultSet.next()) {
                 users.add(new User(
                         resultSet.getString("name"),
@@ -110,8 +107,8 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void cleanUsersTable() {
         try (Connection connection = Util.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(CLEAN_SQL)) {
-            preparedStatement.execute(CLEAN_SQL);
+             Statement statement = connection.createStatement()) {
+            statement.execute(CLEAN_SQL);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
